@@ -1,6 +1,7 @@
 # nf9
 
 A high level module to allow one to quickly display images from Python that relies on the pyds9 module (https://github.com/ericmandel/pyds9)
+Based loosely on some of the functionality lost since the disapearance of Pyraf.
 
 
 # Installing: #
