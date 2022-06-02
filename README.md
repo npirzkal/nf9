@@ -4,11 +4,11 @@ A high level module to allow one to quickly display images from Python that reli
 
 Example:
 
-import nf
+"""import nf
 
 nf.disp("file.fits",1)
 
 xs = [10,100,20]
 ys = [20,20,100]
-nf.tvm(x=xs,y=ys,frame=1,circle=20, color='Red')
+nf.tvm(x=xs,y=ys,frame=1,circle=20, color='Red')"""
 
