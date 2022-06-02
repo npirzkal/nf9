@@ -9,16 +9,16 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-	name='nf',
+	name='nf9',
 	version='1.0',
 	description='High level interface to SAOImageDS9 using pyds9()',
 	url='https://github.com/npirzkal/GRISMCONF',
 	author='Nor Pirzkal',
 	author_email='npirzkal@mac.com',
     package_dir = {
-        'nf': 'nf',
+        'nf9': 'nf9',
         },
-    packages=["nf"],
+    packages=["nf9"],
     install_requires=[
     "pyds9 > 1.9"],
 )
