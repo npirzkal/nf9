@@ -20,5 +20,5 @@ setup(
         },
     packages=["nf9"],
     install_requires=[
-    "pyds9 > 1.9"],
+    "pyds9 > 1.8"],
 )
