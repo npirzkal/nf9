@@ -158,9 +158,9 @@ def scale(z1,z2):
 	nf_ds9.set("scale limits %e %e" % (z1,z2))
 
 
-def tvm(cat=None,frame=None,label=None,x=None,y=None,fontsize=7,color="green",circle=None, world=None, xoff=0., yoff=0.):
+def tvm(cat=None,frame=None,label=None,x=None,y=None,fontsize=7,color="green",circle=None, world=None, xoff=0, yoff=0):
 	"""Rough implementation of the old rvm command. This lets you mark regions on an image using circles. Input can be 
-	a catalog (default is SEXtractor format with X_IMAGE, Y_IMAGE coordinated). x and y can specify different column names 
+	a catalog (default is photutils (i.e. starts at 0,0 and uses xcentroid,ycentroid) format with X_IMAGE, Y_IMAGE coordinated). x and y can specify different column names 
 	in the catalog. cat can be the name of a text file or an astropy Table. If cat is None, coordinates can be passed as
 	x and y and these can be lists"""
 	import tempfile, string
@@ -171,7 +171,7 @@ def tvm(cat=None,frame=None,label=None,x=None,y=None,fontsize=7,color="green",ci
 	if frame!=None:
 		nf_ds9.set("frame %d" % (frame))
 	font="helvetica %d normal roman" % (fontsize)
-	
+
 	if type(cat)==type("s") or type(cat)==Table or type(cat)==type({}):
 		if type(cat)==Table:
 			data = cat
@@ -268,14 +268,18 @@ def tvm(cat=None,frame=None,label=None,x=None,y=None,fontsize=7,color="green",ci
 	tmp = tempfile.mkstemp()[1]
 
 	if label!=None:
-		lines = ["%s; ellipse(%f,%f,%f,%f,%f) # color = %s text={%s} font=\"%s\"\n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],
+		lines = ["%s; ellipse(%f,%f,%f,%f,%f) # color = %s text={%s} font=\"%s\"\n" % (coordsys,x_image[i]+1,y_image[i]+1,a_image[i],b_image[i],
 			theta_image[i],color,label[i],font) for i in range(len(x_image))]
 	else:
-		lines = ["%s; ellipse(%f,%f,%f,%f,%f) # color = %s \n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],theta_image[i],color) for i in range(len(x_image))]
+		lines = ["%s; ellipse(%f,%f,%f,%f,%f) # color = %s \n" % (coordsys,x_image[i]+1,y_image[i]+1,a_image[i],b_image[i],theta_image[i],color) for i in range(len(x_image))]
 
+	#print(tmp)
+	open(tmp,"w").writelines(lines)
 	nf_ds9.set("regions color %s" % (color))
 	nf_ds9.set("regions load %s" % (tmp))
-
+	if os.path.isfile(tmp):
+		os.unlink(tmp)
+		
 def imexam(frame=None):
 	"""Causes DS9 to wait for a mouse click with a blinking cursor. Upon mouse click, returns (i,j) and the value of the pixel"""
 	if frame!=None:
