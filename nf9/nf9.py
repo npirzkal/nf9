@@ -36,7 +36,7 @@ class nf9():
 				ds9_id = self.id_generator()
 				self.nf_ds9 = pyds9.DS9(ds9_id)
 				self.ds9_id = ds9_id
-				
+
 		# if ds9_id is None and targets==None or targets is None:
 		# 	self.ds9_id = self.id_generator()
 		# else:
@@ -201,7 +201,7 @@ class nf9():
 		self.check_dir()
 
 		if frame!=None:
-			nf_ds9.set("frame %d" % (frame))
+			self.nf_ds9.set("frame %d" % (frame))
 		font="helvetica %d normal roman" % (fontsize)
 
 		if type(cat)==type("s") or type(cat)==Table or type(cat)==type({}):
