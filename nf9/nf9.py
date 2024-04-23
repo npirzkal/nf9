@@ -21,11 +21,22 @@ class nf9():
 		# self.nf_ds9 = pyds9.DS9(ds9_id)
 
 
-		targets = pyds9.ds9_targets()
-		print("Found",targets)
+		
 
 		if ds9_id is not None:
+			print("Connecting to",ds9_id)
 			self.nf_ds9 = pyds9.DS9(ds9_id)
+			self.ds9_id = ds9_id
+
+		if ds9_id is None:
+			targets = pyds9.ds9_targets()
+			print("Found",targets)
+			if targets is None:
+				print("New connection")
+				ds9_id = self.id_generator()
+				self.nf_ds9 = pyds9.DS9(ds9_id)
+				self.ds9_id = ds9_id
+				
 		# if ds9_id is None and targets==None or targets is None:
 		# 	self.ds9_id = self.id_generator()
 		# else:
