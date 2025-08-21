@@ -21,8 +21,6 @@ class nf9():
 		# self.nf_ds9 = pyds9.DS9(ds9_id)
 
 
-		
-
 		if ds9_id is not None:
 			print("Connecting to",ds9_id)
 			self.nf_ds9 = pyds9.DS9(ds9_id)
@@ -32,10 +30,16 @@ class nf9():
 			targets = pyds9.ds9_targets()
 			print("Found",targets)
 			if targets is None:
-				print("New connection")
-				ds9_id = self.id_generator()
-				self.nf_ds9 = pyds9.DS9(ds9_id)
-				self.ds9_id = ds9_id
+				print("No connection")
+				return
+			if len(targets)>1:
+				print("Choose one")
+				return
+				# ds9_id = self.id_generator()
+				# print(ds9_id)
+			ds9_id = targets[0]
+			self.nf_ds9 = pyds9.DS9(ds9_id)
+			self.ds9_id = ds9_id
 
 		# if ds9_id is None and targets==None or targets is None:
 		# 	self.ds9_id = self.id_generator()
@@ -142,7 +146,12 @@ class nf9():
 				self.nf_ds9.set("scale limits %e %e" % (z1,z2))
 			if zoom!=None:
 				self.nf_ds9.set("zoom to %d" % (zoom))
-				
+	
+	def print(self,frame,oname):
+		"""Produce an image of the current display"""
+		self.nf_ds9.set("frame %d" % (frame))
+		self.nf_ds9.set('saveimage %s' % (oname))
+
 	def circle(self,i,j,r,frame=None,c="green",ra=False):
 		"""Draw a circle defined by (i,j) and radius r (pixels)"""
 		self.check_dir()
@@ -166,12 +175,12 @@ class nf9():
 
 		self.nf_ds9.set('regions', 'image; box(%f, %f, %f, %f, %f) # color = %s' % (i,j,a,b,t,c))
 
-	def pan(self,i,j,frame=None,ra=False):
+	def pan(self,i,j,frame=None,world=False):
 		"""Pan DS9 to a specific image coordinate"""
-		check_dir()
+		self.check_dir()
 		if frame!=None:
 			self.nf_ds9.set("frame %d" % (frame))
-		if not ra:
+		if not world:
 			self.nf_ds9.set("pan to %d %d" % (i,j))
 		else:
 			self.nf_ds9.set("pan to %f %f wcs fk5" % (i,j))
@@ -183,14 +192,15 @@ class nf9():
 			self.nf_ds9.set("frame %d" % (frame))
 		self.nf_ds9.set("zoom to %d" % (s))
 
-	def scale(self,z1,z2):
+	def scale(self,z1,z2,frame=None):
 		"""Set display scale to z1<z2"""
 		self.check_dir()
-
+		if frame!=None:
+			self.nf_ds9.set("frame %d" % (frame))
 		self.nf_ds9.set("scale limits %e %e" % (z1,z2))
 
 
-	def tvm(self,cat=None,frame=None,label=None,x=None,y=None,fontsize=7,color="green",circle=None, world=None, xoff=0, yoff=0):
+	def tvm(self,x,y,frame=None,label=None,fontsize=7,color="green",circle=None, world=False, xoff=0, yoff=0, origin = 0):
 		"""Rough implementation of the old rvm command. This lets you mark regions on an image using circles. Input can be 
 		a catalog (default is photutils (i.e. starts at 0,0 and uses xcentroid,ycentroid) format with X_IMAGE, Y_IMAGE coordinated). x and y can specify different column names 
 		in the catalog. cat can be the name of a text file or an astropy Table. If cat is None, coordinates can be passed as
@@ -204,95 +214,32 @@ class nf9():
 			self.nf_ds9.set("frame %d" % (frame))
 		font="helvetica %d normal roman" % (fontsize)
 
-		if type(cat)==type("s") or type(cat)==Table or type(cat)==type({}):
-			if type(cat)==Table:
-				data = cat
-			elif type(cat)==type({}):
-				data = cat
-			elif cat[-4:]==".cat":
-				data = Table.read(cat,format="ascii.sextractor")
-			else:
-				data = Table.read(cat)
-
-
-			colnames = data.keys()
-
-
-			if world==None and x==None and y==None:
-				xindex = "X_IMAGE"
-				yindex = "Y_IMAGE"
-				aindex = "A_IMAGE"
-				bindex = "B_IMAGE"
-				tindex = "THETA_IMAGE"
-				coordsys = "image"
-			elif world!=None and x==None and y==None:
-				xindex = "X_WORLD"
-				yindex = "Y_WORLD"
-				aindex = "A_WORLD"
-				bindex = "B_WORLD"
-				tindex = "THETA_WORLD"
-				coordsys = "J2000"
-			elif world==None and x!=None and y!=None:
-				xindex = x
-				yindex = y
-				circle = 5
-				coordsys = "image"
-			elif world!=None and x!=None and y!=None:
-				xindex = x
-				yindex = y
-				circle = 5*0.128/3600
-				coordsys = "J2000"
-
-			if circle==None and (aindex not in colnames or bindex not in colnames or tindex not in colnames):
-				print("Size information not found.. using circle=5")
-				if coordsys=="image":
-					circle = 5
-				else:
-					circle = 5*0.128/3600
-
-			x_image = data[xindex] + xoff
-			y_image = data[yindex] + yoff
-
+		
+		if not world:
 			if circle==None:
-				a_image = data[aindex]
-				b_image = data[bindex]
-				theta_image = data[tindex]
-			else:
-				a_image = x_image*0.+circle
-				b_image = x_image*0.+circle
-				theta_image = x_image*0.
-
+				circle = 5
+			coordsys = "image"
 		else:
-			if world==None:
-				if circle==None:
-					circle = 5
-				coordsys = "image"
-			else:
-				if circle==None:
-					circle = 5*0.128/3600
-				coordsys = "J2000"
-			if cat!=None:
-				x_image = np.asarray(cat[x])
-				y_image = np.asarray(cat[y])
-				a_image = x_image*0.+circle
-				b_image = x_image*0.+circle
-				theta_image = x_image*0.
-			else:
-				if type(x)==type(list([])):
-					x = np.array(x)
-					y = np.array(y)
-				elif type(x)==type(1) or type(x)==type(1.0):
-					x = np.array([x])
-					y = np.array([y])
+			if circle==None:
+				circle = 5*0.128/3600
+			coordsys = "J2000"
+		
 
-				x_image = x
-				y_image = y
-				a_image = x_image*0.+circle
-				b_image = x_image*0.+circle
-				theta_image = x_image*0.
+		x = np.array(x) 
+		y = np.array(y)
 
-		if label!=None:
-			label = data[label]
+		if origin==0 and world is False:
+			x = x + 1
+			y = y + 1
+
+			
+
+		x_image = x
+		y_image = y
+		a_image = x_image*0.+circle
+		b_image = x_image*0.+circle
+		theta_image = x_image*0.
+
 
 		vg1 = np.isnan(a_image)
 		vg2 = np.isnan(b_image)
@@ -300,11 +247,12 @@ class nf9():
 		tmp = tempfile.mkstemp()[1]
 
 		if label!=None:
-			lines = ["%s; ellipse(%f,%f,%f,%f,%f) # color = %s text={%s} font=\"%s\"\n" % (coordsys,x_image[i]+1,y_image[i]+1,a_image[i],b_image[i],
+			lines = ["%s; ellipse(%f,%f,%f,%f,%f) # color = %s text={%s} font=\"%s\"\n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],
 				theta_image[i],color,label[i],font) for i in range(len(x_image))]
 		else:
-			lines = ["%s; ellipse(%f,%f,%f,%f,%f) # color = %s \n" % (coordsys,x_image[i]+1,y_image[i]+1,a_image[i],b_image[i],theta_image[i],color) for i in range(len(x_image))]
+			lines = ["%s; ellipse(%f,%f,%f,%f,%f) # color = %s \n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],theta_image[i],color) for i in range(len(x_image))]
 
+		#print(lines)
 		#print(tmp)
 		open(tmp,"w").writelines(lines)
 		self.nf_ds9.set("regions color %s" % (color))
@@ -319,8 +267,8 @@ class nf9():
 
 		s = self.nf_ds9.get("iexam coordinate image")
 		ws = s.split()
-		x = int(ws[0])
-		y = int(ws[1])
+		x = float(ws[0])
+		y = float(ws[1])
 		s = self.nf_ds9.get("data image {} {} 1 1 yes".format(x,y))
 
 		return x,y,float(s)
