@@ -251,7 +251,7 @@ class nf9():
 				t = "%s; ellipse(%f,%f,%f,%f,%f) # color = %s text={%s} font=\"%s\"\n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],theta_image[i],color,label[i],font)
 			else:
 				t = "%s; ellipse(%f,%f,%f,%f,%f) # color = %s font=\"%s\"\n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],theta_image[i],color,font)
-			print(t)
+			# print(t)
 			self.nf_ds9.set("regions",t)
 
 	def imexam(self,frame=None):
