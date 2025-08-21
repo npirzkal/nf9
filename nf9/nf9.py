@@ -246,13 +246,14 @@ class nf9():
 		b_image[vg2] = 0.
 		tmp = tempfile.mkstemp()[1]
 
+		lines = ""
 		for i in range(len(x_image)):
 			if label!=None:
 				t = "%s; ellipse(%f,%f,%f,%f,%f) # color = %s text={%s} font=\"%s\"\n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],theta_image[i],color,label[i],font)
 			else:
 				t = "%s; ellipse(%f,%f,%f,%f,%f) # color = %s font=\"%s\"\n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],theta_image[i],color,font)
-			# print(t)
-			self.nf_ds9.set("regions",t)
+			lines = lines + t
+		self.nf_ds9.set("regions",lines)
 
 	def imexam(self,frame=None):
 		"""Causes DS9 to wait for a mouse click with a blinking cursor. Upon mouse click, returns (i,j) and the value of the pixel"""

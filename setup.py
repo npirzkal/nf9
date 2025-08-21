@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
 	name='nf9',
-	version='1.4.1',
+	version='1.4.2',
 	description='High level interface to SAOImageDS9 using pyds9()',
 	url='https://github.com/npirzkal/GRISMCONF',
 	author='Nor Pirzkal',
