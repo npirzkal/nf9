@@ -244,16 +244,26 @@ class nf9():
 		vg1 = np.isnan(a_image)
 		vg2 = np.isnan(b_image)
 		b_image[vg2] = 0.
-		tmp = tempfile.mkstemp()[1]
+		# tmp = tempfile.mkstemp()[1]
 
+		# pyds9 does not handle a hug elist so we need to break it up
 		lines = ""
+		n = 0
 		for i in range(len(x_image)):
 			if label!=None:
 				t = "%s; ellipse(%f,%f,%f,%f,%f) # color = %s text={%s} font=\"%s\"\n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],theta_image[i],color,label[i],font)
 			else:
 				t = "%s; ellipse(%f,%f,%f,%f,%f) # color = %s font=\"%s\"\n" % (coordsys,x_image[i],y_image[i],a_image[i],b_image[i],theta_image[i],color,font)
 			lines = lines + t
-		self.nf_ds9.set("regions",lines)
+			n = n + 1
+			if n>1000:
+				self.nf_ds9.set("regions",lines)
+				n = 0
+				lines = ""
+
+		if n!=0:
+			self.nf_ds9.set("regions",lines)
+
 
 	def imexam(self,frame=None):
 		"""Causes DS9 to wait for a mouse click with a blinking cursor. Upon mouse click, returns (i,j) and the value of the pixel"""
